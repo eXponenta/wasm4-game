@@ -1,5 +1,5 @@
-import { treeFrame } from "./img/tree";
-import { Frame, Sprite } from "./nodes/sprite";
+import { treeTexture } from "./img/tree";
+import { Frame, Sprite, Texture } from "./nodes/sprite";
 import * as w4 from "./wasm4";
 
 const FPS = 30;
@@ -26,13 +26,19 @@ const smiley = memory.data<u8>([
     0b11000011,
 ]);
 
-const player = new Sprite(new Frame(8, 8, smiley, w4.BLIT_1BPP), 0.5, 1);
+const smileTexture = new Texture(8, 8, smiley, w4.BLIT_1BPP);
+const player = new Sprite(new Frame(smileTexture), 0.5, 1);
+
 player.hit.width = 2;
 player.hit.height = 2;
-const spriteFrame = treeFrame;
+
+const treeFrame = new Frame(treeTexture);
+const treeBrokenFrame = new Frame(treeTexture, 0, 13, 16, 3);
 
 for(let i = 0; i < COUNT; i++) {
-    const sprite = new Sprite(spriteFrame, 0.5, 1);
+
+    const sprite = new Sprite(
+        Math.random() > 0.8 ? treeBrokenFrame : treeFrame, 0.5, 1);
     
     sprite.x = f32(i32(Math.random() * (w4.SCREEN_SIZE - 8))) + 8.;
     sprite.y = f32(i32(Math.random() * (w4.SCREEN_SIZE - 16))) + 16.;
@@ -86,13 +92,25 @@ function updateGame(): void {
     let intersectX: bool = false;
     let intersectY: bool = false;
 
+    const RAD_SQ = 10 * 10;
+    let minRad = 100000;
+    let treeIndex = -1;
+
     for(let i = 0; i < array.length; i ++) {        
-        if (intersectX && intersectY) {
-            break;
+        const tree = array[i];
+
+        if (tree === player) {
+            continue;
         }
 
-        if (array[i] === player) {
-            continue;
+        const dx = player.x - tree.x;
+        const dy = player.y - tree.y;
+
+        const radSq = i32(dx * dx + dy * dy);
+
+        if (minRad > radSq && radSq < RAD_SQ) {
+            minRad = radSq;
+            treeIndex = i;
         }
 
         if (!intersectX) {
@@ -107,6 +125,14 @@ function updateGame(): void {
             intersectY = intersectY || player.intersect(array[i]);
 
             player.y = lastY;
+        }
+    }
+
+    if (treeIndex > -1) {
+        const tree = array[treeIndex];
+
+        if (tree.frame !== treeBrokenFrame && gamepad & w4.BUTTON_1) {
+            tree.frame = treeBrokenFrame;
         }
     }
 

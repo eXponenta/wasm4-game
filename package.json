@@ -1,11 +1,16 @@
 {
   "name": "my-super-game",
   "version": "1.0.0",
+  "license": "ISC",
   "scripts": {
     "build": "asc --target release",
-    "build:debug": "asc --target debug"
+    "build:debug": "asc --target debug",
+    "run": "w4 run ./build/cart.wasm",
+    "watch": "nodemon --delay 1 --ext ts,json --watch ./src --exec npm run build:debug"
   },
   "devDependencies": {
-    "assemblyscript": "^0.19.5"
+    "assemblyscript": "^0.19.5",
+    "nodemon": "^2.0.12",
+    "wasm4": "^1.0.3"
   }
 }

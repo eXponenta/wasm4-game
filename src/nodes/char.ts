@@ -6,23 +6,25 @@ export class Char extends AnimationSprite {
     private _dir: u8 = 0; 
     private _localFrame: u8 = 0;
 
-    private targetX: f32 = 0;
-    private targetY: f32 = 0;
+    private _dx: i32 = 0;
+    private _dy: i32 = 0;
 
     constructor (frames: StaticArray<Frame>) {
         super(frames, 0.5, 1);
     }
 
     public update (tick: u32, world: Sprite[]): void {
-        this._tryMove(world);
+        if (this._dy !== 0 || this._dx !== 0) {
+            this._tryMove(world);
+        }
     }
 
     private _tryMove (world: Sprite[]): void {        
         const lastX = this.x;
         const lastY = this.y;
 
-        const targetX = this.targetX;
-        const targetY = this.targetY;
+        const targetX = this._dx + this.x;
+        const targetY = this._dy + this.y;
 
         let intersectX: bool = false;
         let intersectY: bool = false;
@@ -57,12 +59,12 @@ export class Char extends AnimationSprite {
             this.y = targetY;
         }
 
-        this.targetX = this.x;
-        this.targetY = this.y;
+        this._dx = 0;
+        this._dy = 0;
     }
 
-    public move (dx: f32, dy: f32): void {
-        this.targetX = this.x + dx;
-        this.targetY = this.y + dy;
+    public move (dx: i32, dy: i32): void {
+        this._dx = dx;
+        this._dy = dy;
     }
 }

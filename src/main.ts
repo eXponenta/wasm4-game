@@ -1,7 +1,7 @@
 import { charTexture } from "./img/char";
 import { treeTexture } from "./img/tree";
 import { Char } from "./nodes/char";
-import { AnimationSprite, Frame, Sprite, Texture } from "./nodes/sprite";
+import { AnimationSprite, Frame, Sprite } from "./nodes/sprite";
 import * as w4 from "./wasm4";
 
 const FPS = 30;
@@ -33,11 +33,11 @@ const treeBrokenFrame = new Frame(treeTexture, 0, 13, 16, 3);
 
 for(let i = 0; i < COUNT; i++) {
 
-    const sprite = new Sprite(
-        Math.random() > 0.2 ? treeBrokenFrame : treeFrame, 0.5, 1);
+    const sprite = new AnimationSprite([treeFrame, treeBrokenFrame], 0.5, 1);
     
-    sprite.x = f32(i32(Math.random() * (w4.SCREEN_SIZE - 8))) + 8.;
-    sprite.y = f32(i32(Math.random() * (w4.SCREEN_SIZE - 16))) + 16.;
+    sprite.frameId = Math.random() > 0.8 ? 1 : 0;
+    sprite.x = i32(Math.random() * (w4.SCREEN_SIZE - 8)) + 8;
+    sprite.y = i32(Math.random() * (w4.SCREEN_SIZE - 16)) + 16;
 
     sprite.hit.width = sprite.frame.width / 4;
     sprite.hit.height = sprite.frame.height / 8;
@@ -47,8 +47,8 @@ for(let i = 0; i < COUNT; i++) {
 
 array[COUNT] = player;
 
-player.x = f32(w4.SCREEN_SIZE / 2);
-player.y = f32(w4.SCREEN_SIZE);
+player.x = w4.SCREEN_SIZE / 2;
+player.y = w4.SCREEN_SIZE;
 
 function sortSpriteY(a: Sprite, b: Sprite): i32 {
     return i32(a.y - b.y);
@@ -79,7 +79,7 @@ function updateGame(): void {
 
     array.sort(sortSpriteY);
 
-    player.move(f32(dx), f32(dy));
+    player.move(dx, dy);
     player.update(currenTick, array);
 
     const RAD_SQ = 10 * 10;
@@ -105,10 +105,10 @@ function updateGame(): void {
     }
 
     if (treeIndex > -1) {
-        const tree = array[treeIndex];
+        const tree = array[treeIndex] as AnimationSprite;
 
-        if (tree.frame !== treeBrokenFrame && gamepad & w4.BUTTON_1) {
-            tree.frame = treeBrokenFrame;
+        if (tree.frameId === 0 && gamepad & w4.BUTTON_1) {
+            tree.frameId = 1;
         }
     }
 }

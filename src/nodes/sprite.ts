@@ -37,8 +37,8 @@ export class Frame extends Rect {
 
 @unmanaged
 export class Sprite {
-    public x: f32 = 0;
-    public y: f32 = 0;
+    public x: i32 = 0;
+    public y: i32 = 0;
    
     public flipX: u32 = 0;
     public flipY: u32 = 0;
@@ -60,8 +60,8 @@ export class Sprite {
     }
 
     public updateBounds(): void {
-        this.hit.x = i32(this.x - f32(this.hit.width) * this.anchorX);
-        this.hit.y = i32(this.y - f32(this.hit.height) * this.anchorY);
+        this.hit.x = this.x - i32(f32(this.hit.width) * this.anchorX);
+        this.hit.y = this.y - i32(f32(this.hit.height) * this.anchorY);
     }
 
     public draw(): void {
@@ -69,8 +69,8 @@ export class Sprite {
         const texture: Texture = frame.base;
         const data = texture.data;
 
-        const x = i32(this.x - f32(frame.width) * this.anchorX);
-        const y = i32(this.y - f32(frame.height) * this.anchorY);
+        const x = this.x - i32(f32(frame.width) * this.anchorX);
+        const y = this.y - i32(f32(frame.height) * this.anchorY);
 
         const flags =             (
             this.flipX & w4.BLIT_FLIP_X |
@@ -116,7 +116,7 @@ export class AnimationSprite extends Sprite {
     }
 
     set frameId (v: u8) {
-        this._frameId = v % this.frames.length;
+        this._frameId = v % u8(this.frames.length);
         this.frame = this.frames[this._frameId];
     }
 

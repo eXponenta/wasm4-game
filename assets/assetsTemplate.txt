@@ -1,0 +1,4 @@
+import { Texture } from "../nodes/sprite";
+
+const %name% = memory.data<u8>([ %bytes% ]);
+export const %name%Texture = new Texture(%width%, %height%, %name%, %flags%);

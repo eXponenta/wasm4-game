@@ -1,5 +1,7 @@
+import { charTexture } from "./img/char";
 import { treeTexture } from "./img/tree";
-import { Frame, Sprite, Texture } from "./nodes/sprite";
+import { Char } from "./nodes/char";
+import { AnimationSprite, Frame, Sprite, Texture } from "./nodes/sprite";
 import * as w4 from "./wasm4";
 
 const FPS = 30;
@@ -11,23 +13,17 @@ const COUNT = 50;
 store<u32>(w4.PALETTE, 0x0, 0 * sizeof<u32>()) // 1
 store<u32>(w4.PALETTE, 0xffffff, 1 * sizeof<u32>()) // 2
 store<u32>(w4.PALETTE, 0x00ff00, 2 * sizeof<u32>()) // 3
-store<u32>(w4.PALETTE, 0x0000ff, 3 * sizeof<u32>()) //4
+store<u32>(w4.PALETTE, 0xdfafaf, 3 * sizeof<u32>()) //4
 
 const array: Array<Sprite> = new Array<Sprite>(COUNT + 1);
 
-const smiley = memory.data<u8>([
-    0b11000011,
-    0b10000001,
-    0b00100100,
-    0b00100100,
-    0b00000000,
-    0b00100100,
-    0b10011001,
-    0b11000011,
-]);
+const charsFrames: StaticArray<Frame> = new StaticArray<Frame>(16);
 
-const smileTexture = new Texture(8, 8, smiley, w4.BLIT_1BPP);
-const player = new Sprite(new Frame(smileTexture), 0.5, 1);
+for(let i: u32 = 0; i < 16; i ++) {
+    charsFrames[i] = new Frame(charTexture, 16 * (i / 4), 16 * (i % 4), 16, 16);
+}
+
+const player = new Char(charsFrames);
 
 player.hit.width = 2;
 player.hit.height = 2;
@@ -38,7 +34,7 @@ const treeBrokenFrame = new Frame(treeTexture, 0, 13, 16, 3);
 for(let i = 0; i < COUNT; i++) {
 
     const sprite = new Sprite(
-        Math.random() > 0.8 ? treeBrokenFrame : treeFrame, 0.5, 1);
+        Math.random() > 0.2 ? treeBrokenFrame : treeFrame, 0.5, 1);
     
     sprite.x = f32(i32(Math.random() * (w4.SCREEN_SIZE - 8))) + 8.;
     sprite.y = f32(i32(Math.random() * (w4.SCREEN_SIZE - 16))) + 16.;
@@ -83,14 +79,8 @@ function updateGame(): void {
 
     array.sort(sortSpriteY);
 
-    const lastX = player.x;
-    const lastY = player.y;
-
-    const targetX = lastX + f32(dx);
-    const targetY = lastY + f32(dy);
-    
-    let intersectX: bool = false;
-    let intersectY: bool = false;
+    player.move(f32(dx), f32(dy));
+    player.update(currenTick, array);
 
     const RAD_SQ = 10 * 10;
     let minRad = 100000;
@@ -112,20 +102,6 @@ function updateGame(): void {
             minRad = radSq;
             treeIndex = i;
         }
-
-        if (!intersectX) {
-            player.x = targetX;
-            intersectX = intersectX || player.intersect(array[i]);            
-
-            player.x = lastX;
-        }
-
-        if (!intersectY) {
-            player.y = targetY;
-            intersectY = intersectY || player.intersect(array[i]);
-
-            player.y = lastY;
-        }
     }
 
     if (treeIndex > -1) {
@@ -134,14 +110,6 @@ function updateGame(): void {
         if (tree.frame !== treeBrokenFrame && gamepad & w4.BUTTON_1) {
             tree.frame = treeBrokenFrame;
         }
-    }
-
-    if (!intersectX) {
-        player.x = targetX;
-    }
-
-    if (!intersectY) {
-        player.y = targetY;
     }
 }
 
@@ -153,14 +121,6 @@ export function update (): void {
     }
 
     for(let i = 0; i < array.length; i ++) {
-
-        if (array[i] == player) {
-            store<u16>(w4.DRAW_COLORS, 0x04);
-        } else {
-            // tree
-            store<u16>(w4.DRAW_COLORS, 0x4230);
-        }
-
         array[i].draw();
     }
 }

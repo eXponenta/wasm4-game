@@ -7,7 +7,8 @@ export class Texture {
         public width: u8,
         public height: u8,
         public data: usize,
-        public type: u32 = w4.BLIT_1BPP
+        public type: u32 = w4.BLIT_1BPP,
+        public colors: u16 = 0x0123
     ) {
     }
 }
@@ -34,7 +35,6 @@ export class Frame extends Rect {
     }
 }
 
-@final
 @unmanaged
 export class Sprite {
     public x: f32 = 0;
@@ -78,6 +78,10 @@ export class Sprite {
             texture.type
         );
 
+        if (texture.colors) {
+            store<u16>(w4.DRAW_COLORS, texture.colors);
+        }
+
         if (frame.isSubFrame) {
             w4.blitSub(
                 data, x, y,
@@ -96,5 +100,27 @@ export class Sprite {
                 flags
             );
         }
+    }
+}
+
+@unmanaged
+export class AnimationSprite extends Sprite {
+    private _frameId: u8 = 0;
+
+    constructor (
+        public frames: StaticArray<Frame>,
+        anchorX: f32 = 0,
+        anchroY: f32 = 0   
+    ) {
+        super(frames[0], anchorX, anchroY);
+    }
+
+    set frameId (v: u8) {
+        this._frameId = v % this.frames.length;
+        this.frame = this.frames[this._frameId];
+    }
+
+    get frameId (): u8 {
+        return this._frameId;
     }
 }

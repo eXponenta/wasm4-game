@@ -20,7 +20,7 @@ const array: Array<Sprite> = new Array<Sprite>(COUNT + 1);
 const charsFrames: StaticArray<Frame> = new StaticArray<Frame>(16);
 
 for(let i: u32 = 0; i < 16; i ++) {
-    charsFrames[i] = new Frame(charTexture, 16 * (i / 4), 16 * (i % 4), 16, 16);
+    charsFrames[i] = new Frame(charTexture, 16 * (i % 4), 16 * (i / 4), 16, 16);
 }
 
 const player = new Char(charsFrames);

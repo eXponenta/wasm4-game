@@ -3,7 +3,7 @@ Game for wasm4 runtime
 
 ## How to play
 
-Play game at __[THIS](https://exponenta.github.io/wasm4-game/build/my-super-game.html)__!
+Play game at __[THIS](https://exponenta.github.io/wasm4-game/build/index.html)__!
 
 ## Controls
 

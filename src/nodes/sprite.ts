@@ -1,7 +1,7 @@
 import { Rect } from '../math/Rect';
 import * as w4 from './../wasm4';
 
-@unmanaged
+//@unmanaged
 export class Texture {
     constructor (
         public width: u8,
@@ -13,7 +13,7 @@ export class Texture {
     }
 }
 
-@unmanaged
+//@unmanaged
 export class Frame extends Rect {
     constructor(
         public base: Texture,
@@ -35,7 +35,7 @@ export class Frame extends Rect {
     }
 }
 
-@unmanaged
+//@unmanaged
 export class Sprite {
     public x: i32 = 0;
     public y: i32 = 0;
@@ -103,7 +103,7 @@ export class Sprite {
     }
 }
 
-@unmanaged
+//@unmanaged
 export class AnimationSprite extends Sprite {
     private _frameId: u8 = 0;
 

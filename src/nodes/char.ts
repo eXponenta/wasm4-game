@@ -1,3 +1,4 @@
+import { charTexture } from "../img/char";
 import { AnimationSprite, Frame, Sprite } from "./sprite";
 
 const enum DIR {
@@ -6,7 +7,7 @@ const enum DIR {
     RIGHT = 2,
     LEFT = 3,
 }
-@unmanaged
+//@unmanaged
 export class Char extends AnimationSprite {
     private _lastDir: DIR = DIR.DOWN;
     private _localFrame: u8 = 0;

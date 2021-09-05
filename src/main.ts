@@ -1,65 +1,50 @@
-import { charTexture } from "./img/char";
-import { treeTexture } from "./img/tree";
 import { Char } from "./nodes/char";
-import { AnimationSprite, Frame, Sprite } from "./nodes/sprite";
+import { AnimationSprite, Sprite } from "./nodes/sprite";
+import * as C from './constants';
 import * as w4 from "./wasm4";
+import { Chunk } from "./world/chunk";
+import { charsFrames } from "./img/char";
 
-const FPS = 30;
-const FRAME_DROP = 60 / FPS;
+C.setPalette();
+
+const FRAME_DROP = 60 / C.FPS;
+
 let currenTick: u32 = 0;
+let currenChunk: Chunk;
+let player: Char;
 
-const COUNT = 50;
+function regenerate (x: i32, y: i32): Chunk {
+    if (currenChunk) {
+        currenChunk.dispose();
+    }
 
-store<u32>(w4.PALETTE, 0x0, 0 * sizeof<u32>()) // 1
-store<u32>(w4.PALETTE, 0xffffff, 1 * sizeof<u32>()) // 2
-store<u32>(w4.PALETTE, 0x00ff00, 2 * sizeof<u32>()) // 3
-store<u32>(w4.PALETTE, 0xdfafaf, 3 * sizeof<u32>()) //4
+    currenChunk = new Chunk(x, y);
+    currenChunk.setPlayer(player);
 
-const array: Array<Sprite> = new Array<Sprite>(COUNT + 1);
+    player.x = (player.x + w4.SCREEN_SIZE) % w4.SCREEN_SIZE;
+    player.y = (player.y + w4.SCREEN_SIZE) % w4.SCREEN_SIZE;
 
-const charsFrames: StaticArray<Frame> = new StaticArray<Frame>(16);
-
-for(let i: u32 = 0; i < 16; i ++) {
-    charsFrames[i] = new Frame(charTexture, 16 * (i % 4), 16 * (i / 4), 16, 16);
+    w4.trace('regenerate' + x.toString() + ':' + y.toString());
+    w4.trace('chunk size:' + currenChunk.objects.length.toString());
+    return currenChunk;
 }
-
-const player = new Char(charsFrames);
-
-player.hit.width = 2;
-player.hit.height = 2;
-
-const treeFrame = new Frame(treeTexture);
-const treeBrokenFrame = new Frame(treeTexture, 0, 13, 16, 3);
-
-for(let i = 0; i < COUNT; i++) {
-
-    const sprite = new AnimationSprite([treeFrame, treeBrokenFrame], 0.5, 1);
-    
-    sprite.frameId = Math.random() > 0.8 ? 1 : 0;
-    sprite.x = i32(Math.random() * (w4.SCREEN_SIZE - 8)) + 8;
-    sprite.y = i32(Math.random() * (w4.SCREEN_SIZE - 16)) + 16;
-
-    sprite.hit.width = sprite.frame.width / 4;
-    sprite.hit.height = sprite.frame.height / 8;
-
-    array[i] = sprite;
-}
-
-array[COUNT] = player;
-
-player.x = w4.SCREEN_SIZE / 2;
-player.y = w4.SCREEN_SIZE;
 
 function sortSpriteY(a: Sprite, b: Sprite): i32 {
     return i32(a.y - b.y);
 }
 
 export function start(): void {
+    player = new Char(charsFrames);
+    player.hit.width = 2;
+    player.hit.height = 2;
+    player.x = w4.SCREEN_SIZE / 2;
+    player.y = -4;
 
+    currenChunk = regenerate(0, 0);
 }
 
 function updateGame(): void {
-    
+    const array = currenChunk.objects;
     const gamepad = load<u8>(w4.GAMEPAD1);
 
     let dx: i32 = 0;
@@ -111,16 +96,37 @@ function updateGame(): void {
             tree.frameId = 1;
         }
     }
+
+    let wasGenerated = false;
+    const px = player.x;
+    const py = player.y;
+
+    if (px > i32(w4.SCREEN_SIZE)) {
+        currenChunk = regenerate(currenChunk.x + 1, currenChunk.y);
+        wasGenerated = true;
+    } else if (px < 0) {
+        currenChunk = regenerate(currenChunk.x - 1, currenChunk.y);
+        wasGenerated = true;
+    }
+
+    if (!wasGenerated) {
+        if (py > i32(w4.SCREEN_SIZE)) {
+            currenChunk = regenerate(currenChunk.x, currenChunk.y + 1);
+        } else if (py < 0) {
+            currenChunk = regenerate(currenChunk.x, currenChunk.y - 1);
+        }
+    }
 }
 
 export function update (): void {
-    currenTick ++;
+    const objects = currenChunk.objects;
 
+    currenTick ++;
     if (currenTick % FRAME_DROP === 0) {
         updateGame();
     }
 
-    for(let i = 0; i < array.length; i ++) {
-        array[i].draw();
+    for(let i = 0; i < objects.length; i ++) {
+        objects[i].draw();
     }
 }

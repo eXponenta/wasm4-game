@@ -1,4 +1,4 @@
-@unmanaged
+//@unmanaged
 export class Rect {
     constructor (
         public x: i32,

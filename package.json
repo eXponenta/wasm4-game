@@ -10,8 +10,8 @@
     "bundle": "w4 bundle ./build/cart.wasm --html ./build/my-super-game.html"
   },
   "devDependencies": {
-    "assemblyscript": "^0.19.5",
+    "assemblyscript": "^0.19.12",
     "nodemon": "^2.0.12",
-    "wasm4": "^1.0.3"
+    "wasm4": "^1.0.4"
   }
 }

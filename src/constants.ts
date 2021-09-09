@@ -5,7 +5,7 @@ export const FPS = 30;
 
 export const MIN_OBJ_PER_SCREEN = 3;
 export const MAX_OBJ_PER_SCREEN = 10;
-export const MAX_CHUNKS = 10;
+export const MAX_CHUNKS = 100;
 
 export function setPalette(): void {    
     store<u32>(w4.PALETTE, 0x16290d, 0 * sizeof<u32>()) // 1 gray

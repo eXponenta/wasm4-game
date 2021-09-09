@@ -32,6 +32,10 @@ export class Entity {
 
     public damage (): void {
     }
+
+    public attack(): void {
+
+    }
 }
 
 export class Tree extends Entity {

@@ -1,21 +1,57 @@
+import * as w4 from './../wasm4';
 import { Entity } from "./entity";
 import { AnimationSprite, Frame, Sprite } from "./sprite";
 
 const enum DIR {
+    NONE = -1,
     DOWN = 0,
     UP = 1,
     RIGHT = 2,
     LEFT = 3,
 }
+
+const KEY_DIR_TABLE = [
+    w4.BUTTON_DOWN, w4.BUTTON_UP,
+    w4.BUTTON_RIGHT, w4.BUTTON_LEFT
+];
+
+const DIR_TABLE_X = [0, 0, 1, -1];
+const DIR_TABLE_Y = [1, -1, 0, 0];
+
 //@unmanaged
 export class Char extends Entity {
-    private _lastDir: DIR = DIR.DOWN;
-    private _localFrame: u8 = 0;
+    private _moveDir: DIR = DIR.NONE;
+    private _lookDir: DIR = DIR.DOWN;
     private _dx: i32 = 0;
     private _dy: i32 = 0;
+    private _localFrame: u8 = 0;
+    private _keys: Array<u8> = [];
 
     constructor (frames: StaticArray<Frame>) {
         super(new AnimationSprite(frames, 0.5, 14. / 16.));
+    }
+
+    public changeKeyState(key: u8, pressed: u8): void {
+        if (key < 0xf) {
+            return;
+        }
+
+        this._moveDir = DIR.NONE;
+
+        if (pressed) {
+            this._keys.push(key);
+        } else {
+            const idx = this._keys.indexOf(key);
+            if (idx > -1)
+                this._keys.splice(idx, 1);
+        }
+
+        if (this._keys.length > 0) {
+            const last = this._keys[this._keys.length - 1];
+
+            this._moveDir = KEY_DIR_TABLE.indexOf(last);
+            this._lookDir = this._moveDir; 
+        }
     }
 
     public update (tick: u32, world: Entity[]): void {
@@ -27,10 +63,9 @@ export class Char extends Entity {
     private _animate(tick: u32): void {
         const node = this.node as AnimationSprite;
 
-        if (this._dy === 0 && this._dx === 0) {
+        if (this._moveDir === DIR.NONE) {
             this._localFrame = 0;
-            node.frameId = u8(this._lastDir * 4);
-            
+            node.frameId = u8(this._lookDir * 4);
             return;
         }
 
@@ -38,28 +73,19 @@ export class Char extends Entity {
             this._localFrame = (this._localFrame + 1) % 4;
         }
 
-        let dir: i32 = this._lastDir;
-
-        if (this._dx > 0) {
-            dir = DIR.RIGHT;
-        } else if (this._dx < 0) {
-            dir = DIR.LEFT;
-        }
-
-        if (this._dy < 0) {
-            dir = DIR.UP;
-        } else if (this._dy > 0) {
-            dir = DIR.DOWN;
-        }
-
-        this._lastDir = dir;
-
-        node.frameId = 4 * u8(dir) + this._localFrame;
-
+        node.frameId = 4 * u8(this._lookDir) + this._localFrame;
     }
 
     private _beginMove (world: Entity[]): void {
         const node = this.node;
+        
+        this._dx = 0;
+        this._dy = 0;
+
+        if (this._moveDir !== DIR.NONE) {
+            this._dx = DIR_TABLE_X[this._moveDir];
+            this._dy = DIR_TABLE_Y[this._moveDir];
+        }
 
         const lastX = node.x;
         const lastY = node.y;
@@ -108,8 +134,7 @@ export class Char extends Entity {
         this._dx = this._dy = 0;
     }
 
-    public move (dx: i32, dy: i32): void {
-        this._dx = dx;
-        this._dy = dy;
+    public attack(): void {
+        (this.node as AnimationSprite).frameId = u8(this._lookDir * 4 + 1);
     }
 }

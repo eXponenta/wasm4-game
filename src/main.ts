@@ -1,12 +1,10 @@
 import { Char } from "./nodes/char";
-import { AnimationSprite, Sprite } from "./nodes/sprite";
 import * as C from './constants';
 import * as w4 from "./wasm4";
 import { Chunk } from "./world/chunk";
 import { charsFrames } from "./img/char";
 import { oval } from "./utils";
 import { Entity } from "./nodes/entity";
-import { trees } from "./img/tree_pack";
 
 C.setPalette();
 
@@ -16,7 +14,6 @@ let lastTime: f64 = 0;
 let currenTick: u32 = 0;
 let currenChunk: Chunk;
 let player: Char;
-
 let lastGamepad: usize = 0;
 
 function regenerate (x: i32, y: i32): Chunk {
@@ -57,30 +54,21 @@ function updateGame(): void {
     lastTime = time;
 
     //w4.trace("delta time:" + delta.toString())
-
     const array = currenChunk.objects;
+
     const gamepad = load<u8>(w4.GAMEPAD1);
-    const gamepadDiff = (lastGamepad ^ gamepad) & gamepad;
+    const gamepadDiff = (lastGamepad ^ gamepad);
+    const gamepadPressed = gamepadDiff & gamepad;
+    const gamepadReleased = gamepadDiff & lastGamepad;
     lastGamepad = gamepad;
 
-    let dx: i32 = 0;
-    let dy: i32 = 0;
-
-    if (gamepad & w4.BUTTON_RIGHT) {
-        dx = 1;
-    } else if (gamepad & w4.BUTTON_LEFT) {
-        dx = -1;
-    }
-
-    if (gamepad & w4.BUTTON_UP) {
-        dy = -1;
-    } else if (gamepad & w4.BUTTON_DOWN) {
-        dy = 1;
+    for(let i:u8 = 0; i < 8; i ++) {
+        if ((gamepadDiff >> i) & 0x1) {
+            player.changeKeyState(1 << i, (gamepad >> i) & 0x1);
+        }
     }
 
     array.sort(sortSpriteY);
-
-    player.move(dx, dy);
 
     const RAD_SQ = 10 * 10;
     let minRad = 100000;
@@ -106,9 +94,12 @@ function updateGame(): void {
         }
     }
 
-    if (treeIndex > -1 && gamepadDiff & w4.BUTTON_1) {
-        const tree = array[treeIndex];
-        tree.damage();
+    if (gamepadPressed & w4.BUTTON_1) {
+        player.attack();
+
+        if (treeIndex > -1) { 
+            array[treeIndex].damage();
+        }
     }
 
     let wasGenerated = false;
@@ -130,6 +121,12 @@ function updateGame(): void {
             currenChunk = regenerate(currenChunk.x, currenChunk.y - 1);
         }
     }
+}
+
+function gui (): void {
+    store<u16>(w4.DRAW_COLORS, 0x01);
+    
+    w4.text('chunk:' + currenChunk.x.toString() + '-' + currenChunk.y.toString(), 0,0);
 }
 
 export function update (): void {
@@ -165,5 +162,6 @@ export function update (): void {
     for(let i = 0; i < objects.length; i ++) {
         objects[i].node.draw();
     }
-    
+
+    gui();
 }

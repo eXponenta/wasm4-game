@@ -9,7 +9,7 @@ import { fillChunk } from "./gen";
 export class Chunk {
     public objects: Array<Entity>;
     public readonly count: u32;
-    public readonly seed: i32;
+    public readonly seed: u32;
 
     private player: Char | null;
 
@@ -17,7 +17,8 @@ export class Chunk {
         public readonly x: i32 = 0,
         public readonly y: i32 = 0,
     ) {
-        const seed = SEED + (this.y + MAX_CHUNKS / 2) * MAX_CHUNKS + (this.x + MAX_CHUNKS / 2);
+        const offset = MAX_CHUNKS / 2;
+        const seed = SEED + ((this.y + offset) << 16 | (this.x + offset));
         const rnd = new Prng (seed);
 
         this.count = rnd.randomRange<u32>(MIN_OBJ_PER_SCREEN, MAX_OBJ_PER_SCREEN); 

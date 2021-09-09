@@ -19,6 +19,7 @@
       "noAssert": true
     },
     "debug": {
+      "sourceMap": "./cart.wasm.map",
       "debug": true
     }
   }

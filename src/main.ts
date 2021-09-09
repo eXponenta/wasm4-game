@@ -119,6 +119,17 @@ function updateGame(): void {
 }
 
 export function update (): void {
+    const w = 160 >> 2;
+
+    for (let i = 0; i < 160 * w; i ++) {
+        const isOddRow = (i / w) % 2;
+        const color = isOddRow 
+            ? (1 << 6) | (3 << 4) | (1 << 2) | 3 
+            : (3 << 6) | (1 << 4) | (3 << 2) | 1;
+
+        store<u8>(w4.FRAMEBUFFER + sizeof<u8>() * i, color);
+    }
+
     const objects = currenChunk.objects;
 
     currenTick ++;
@@ -129,4 +140,5 @@ export function update (): void {
     for(let i = 0; i < objects.length; i ++) {
         objects[i].draw();
     }
+    
 }

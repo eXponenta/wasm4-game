@@ -8,7 +8,8 @@ export class Texture {
         public height: u8,
         public data: usize,
         public type: u32 = w4.BLIT_1BPP,
-        public colors: u16 = 0x0123
+        public colors: u32 = 0x0123,
+        public maskData: usize = 0
     ) {
     }
 }
@@ -68,38 +69,46 @@ export class Sprite {
         const frame: Frame = this.frame;
         const texture: Texture = frame.base;
         const data = texture.data;
+        const maskData = texture.maskData;
 
         const x = this.x - i32(f32(frame.width) * this.anchorX);
         const y = this.y - i32(f32(frame.height) * this.anchorY);
 
-        const flags =             (
+        const flags =(
             this.flipX & w4.BLIT_FLIP_X |
-            this.flipY & w4.BLIT_FLIP_Y |
-            texture.type
+            this.flipY & w4.BLIT_FLIP_Y
         );
 
-        if (texture.colors) {
-            store<u16>(w4.DRAW_COLORS, texture.colors);
-        }
-
-        if (frame.isSubFrame) {
+        // we have a mask, render it with last color
+        // for this case colors MUST be a like 0x4321, 0 is always will be aplied for 1 colors
+        // unpacked onto 0x10 and 0x4320
+        if (maskData !== 0) {
+            store<u16>(w4.DRAW_COLORS, (texture.colors & 0xf) << 4);   
             w4.blitSub(
-                data, x, y,
+                maskData, x, y,
                 frame.width,
                 frame.height,
                 frame.x,
                 frame.y,
                 texture.width,
-                flags
+                flags | w4.BLIT_1BPP
             );
-        } else {
-            w4.blit(
-                data, x, y,
-                frame.width,
-                frame.height,
-                flags
-            );
+
+            store<u16>(w4.DRAW_COLORS, texture.colors & 0xfff0);
+        } else {               
+            store<u16>(w4.DRAW_COLORS, texture.colors);
         }
+
+        
+        w4.blitSub(
+            data, x, y,
+            frame.width,
+            frame.height,
+            frame.x,
+            frame.y,
+            texture.width,
+            flags | texture.type
+        );
     }
 }
 

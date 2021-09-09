@@ -11,7 +11,9 @@
   },
   "devDependencies": {
     "assemblyscript": "^0.19.12",
-    "nodemon": "^2.0.12",
-    "wasm4": "^1.0.5"
+    "nodemon": "^2.0.12"
+  },
+  "dependencies": {
+    "wasm4": "1.0.4"
   }
 }

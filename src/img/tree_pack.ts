@@ -5,8 +5,9 @@ const tree_packMask = memory.data<u8>([ 0x0,0x0,0x0,0x0,0x0,0x0,0x3,0x0,0x0,0x0,
 
 export const tree_packTexture = new Texture(104, 48, tree_pack, 1, 0x4321, tree_packMask);
 
+
 export const trees: Array<Frame> = [
-    new Frame(tree_packTexture, 0 ,0, 40, 48),
-    new Frame(tree_packTexture, 40,0, 30, 48),
-    new Frame(tree_packTexture, 70,0, 30, 48),
+    new Frame(tree_packTexture, 0 ,0, 40, 48, 0.5, 44.0 / 48.0),
+    new Frame(tree_packTexture, 40,0, 30, 40, 0.5, 1.),
+    new Frame(tree_packTexture, 70,0, 30, 41, 0.5, 1.),
 ];

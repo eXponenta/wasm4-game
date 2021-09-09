@@ -126,5 +126,9 @@ export function trace (str: string): void {
     const byteLength = load<u32>(changetype<usize>(str) - 4);
     traceUtf16(str, byteLength);
 }
+
 @external("env", "traceUtf16")
 declare function traceUtf16 (str: string, byteLength: i32): void;
+
+@external("env", "seed")
+export declare function time (): f64;

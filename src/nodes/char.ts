@@ -15,7 +15,7 @@ export class Char extends AnimationSprite {
     private _dy: i32 = 0;
 
     constructor (frames: StaticArray<Frame>) {
-        super(frames, 0.5, 1);
+        super(frames, 0.5, 14. / 16.);
     }
 
     public update (tick: u32, world: Sprite[]): void {

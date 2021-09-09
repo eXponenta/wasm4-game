@@ -4,11 +4,13 @@ import * as C from './constants';
 import * as w4 from "./wasm4";
 import { Chunk } from "./world/chunk";
 import { charsFrames } from "./img/char";
+import { oval } from "./utils";
 
 C.setPalette();
 
 const FRAME_DROP = 60 / C.FPS;
 
+let lastTime: f64 = 0;
 let currenTick: u32 = 0;
 let currenChunk: Chunk;
 let player: Char;
@@ -41,9 +43,17 @@ export function start(): void {
     player.y = -4;
 
     currenChunk = regenerate(0, 0);
+
+    lastTime = w4.time();
 }
 
 function updateGame(): void {
+    const time = w4.time();
+    const delta = time - lastTime;
+    lastTime = time;
+
+    //w4.trace("delta time:" + delta.toString())
+
     const array = currenChunk.objects;
     const gamepad = load<u8>(w4.GAMEPAD1);
 
@@ -121,6 +131,7 @@ function updateGame(): void {
 export function update (): void {
     const w = 160 >> 2;
 
+    
     for (let i = 0; i < 160 * w; i ++) {
         const isOddRow = (i / w) % 2;
         const color = isOddRow 
@@ -129,12 +140,22 @@ export function update (): void {
 
         store<u8>(w4.FRAMEBUFFER + sizeof<u8>() * i, color);
     }
+    
 
     const objects = currenChunk.objects;
 
     currenTick ++;
     if (currenTick % FRAME_DROP === 0) {
         updateGame();
+    }
+
+    store<u16>(w4.DRAW_COLORS, 0x22);
+    for(let i = 0; i < objects.length; i ++) {
+        const obj = objects[i];
+        const bounds = obj.bounds;
+        const h =  bounds.height / 4;
+
+        oval(bounds.x, obj.y - h / 2, bounds.width, h);
     }
 
     for(let i = 0; i < objects.length; i ++) {

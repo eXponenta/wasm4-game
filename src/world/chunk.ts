@@ -1,12 +1,13 @@
 import { MAX_CHUNKS, MAX_OBJ_PER_SCREEN, MIN_OBJ_PER_SCREEN, SEED, setPalette } from "../constants";
 import { Prng } from "../math/random";
 import { Char } from "../nodes/char";
+import { Entity } from "../nodes/entity";
 import { Sprite } from "../nodes/sprite";
 import { fillChunk } from "./gen";
 
 @unmanaged
 export class Chunk {
-    public objects: Array<Sprite>;
+    public objects: Array<Entity>;
     public readonly count: u32;
     public readonly seed: i32;
 
@@ -20,7 +21,7 @@ export class Chunk {
         const rnd = new Prng (seed);
 
         this.count = rnd.randomRange<u32>(MIN_OBJ_PER_SCREEN, MAX_OBJ_PER_SCREEN); 
-        this.objects = new Array<Sprite>(this.count + 1);
+        this.objects = new Array<Entity>(this.count + 1);
         this.seed = seed;
 
         fillChunk(this, rnd);

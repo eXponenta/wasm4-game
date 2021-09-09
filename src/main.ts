@@ -5,6 +5,8 @@ import * as w4 from "./wasm4";
 import { Chunk } from "./world/chunk";
 import { charsFrames } from "./img/char";
 import { oval } from "./utils";
+import { Entity } from "./nodes/entity";
+import { trees } from "./img/tree_pack";
 
 C.setPalette();
 
@@ -14,6 +16,8 @@ let lastTime: f64 = 0;
 let currenTick: u32 = 0;
 let currenChunk: Chunk;
 let player: Char;
+
+let lastGamepad: usize = 0;
 
 function regenerate (x: i32, y: i32): Chunk {
     if (currenChunk) {
@@ -31,16 +35,16 @@ function regenerate (x: i32, y: i32): Chunk {
     return currenChunk;
 }
 
-function sortSpriteY(a: Sprite, b: Sprite): i32 {
+function sortSpriteY(a: Entity, b: Entity): i32 {
     return i32(a.y - b.y);
 }
 
 export function start(): void {
     player = new Char(charsFrames);
-    player.hit.width = 2;
-    player.hit.height = 2;
-    player.x = w4.SCREEN_SIZE / 2;
-    player.y = -4;
+    player.node.hit.width = 2;
+    player.node.hit.height = 2;
+    player.node.x = w4.SCREEN_SIZE / 2;
+    player.node.y = -4;
 
     currenChunk = regenerate(0, 0);
 
@@ -56,6 +60,8 @@ function updateGame(): void {
 
     const array = currenChunk.objects;
     const gamepad = load<u8>(w4.GAMEPAD1);
+    const gamepadDiff = (lastGamepad ^ gamepad) & gamepad;
+    lastGamepad = gamepad;
 
     let dx: i32 = 0;
     let dy: i32 = 0;
@@ -75,21 +81,22 @@ function updateGame(): void {
     array.sort(sortSpriteY);
 
     player.move(dx, dy);
-    player.update(currenTick, array);
 
     const RAD_SQ = 10 * 10;
     let minRad = 100000;
     let treeIndex = -1;
 
-    for(let i = 0; i < array.length; i ++) {        
-        const tree = array[i];
+    for(let i = 0; i < array.length; i ++) {
+        const object = array[i];
 
-        if (tree === player) {
+        object.update(currenTick, array);
+
+        if (object === player) {
             continue;
         }
 
-        const dx = player.x - tree.x;
-        const dy = player.y - tree.y;
+        const dx = player.x - object.x;
+        const dy = player.y - object.y;
 
         const radSq = i32(dx * dx + dy * dy);
 
@@ -99,12 +106,9 @@ function updateGame(): void {
         }
     }
 
-    if (treeIndex > -1) {
-        const tree = array[treeIndex] as AnimationSprite;
-
-        if (tree.frameId === 0 && gamepad & w4.BUTTON_1) {
-            tree.frameId = 1;
-        }
+    if (treeIndex > -1 && gamepadDiff & w4.BUTTON_1) {
+        const tree = array[treeIndex];
+        tree.damage();
     }
 
     let wasGenerated = false;
@@ -152,14 +156,14 @@ export function update (): void {
     store<u16>(w4.DRAW_COLORS, 0x22);
     for(let i = 0; i < objects.length; i ++) {
         const obj = objects[i];
-        const bounds = obj.bounds;
-        const h =  bounds.height / 4;
+        const bounds = obj.node.bounds;
+        const h = max(bounds.height / 4, 4);
 
         oval(bounds.x, obj.y - h / 2, bounds.width, h);
     }
 
     for(let i = 0; i < objects.length; i ++) {
-        objects[i].draw();
+        objects[i].node.draw();
     }
     
 }

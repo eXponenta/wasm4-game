@@ -1,4 +1,4 @@
-import { charTexture } from "../img/char";
+import { Entity } from "./entity";
 import { AnimationSprite, Frame, Sprite } from "./sprite";
 
 const enum DIR {
@@ -8,26 +8,29 @@ const enum DIR {
     LEFT = 3,
 }
 //@unmanaged
-export class Char extends AnimationSprite {
+export class Char extends Entity {
     private _lastDir: DIR = DIR.DOWN;
     private _localFrame: u8 = 0;
     private _dx: i32 = 0;
     private _dy: i32 = 0;
 
     constructor (frames: StaticArray<Frame>) {
-        super(frames, 0.5, 14. / 16.);
+        super(new AnimationSprite(frames, 0.5, 14. / 16.));
     }
 
-    public update (tick: u32, world: Sprite[]): void {
+    public update (tick: u32, world: Entity[]): void {
         this._beginMove(world);
         this._animate(tick);
         this._endMove();
     }
 
     private _animate(tick: u32): void {
+        const node = this.node as AnimationSprite;
+
         if (this._dy === 0 && this._dx === 0) {
             this._localFrame = 0;
-            this.frameId = u8(this._lastDir * 4);
+            node.frameId = u8(this._lastDir * 4);
+            
             return;
         }
 
@@ -51,16 +54,18 @@ export class Char extends AnimationSprite {
 
         this._lastDir = dir;
 
-        this.frameId = 4 * u8(dir) + this._localFrame;
+        node.frameId = 4 * u8(dir) + this._localFrame;
 
     }
 
-    private _beginMove (world: Sprite[]): void {        
-        const lastX = this.x;
-        const lastY = this.y;
+    private _beginMove (world: Entity[]): void {
+        const node = this.node;
 
-        const targetX = this._dx + this.x;
-        const targetY = this._dy + this.y;
+        const lastX = node.x;
+        const lastY = node.y;
+
+        const targetX = this._dx + node.x;
+        const targetY = this._dy + node.y;
 
         let intersectX: bool = false;
         let intersectY: bool = false;
@@ -73,17 +78,17 @@ export class Char extends AnimationSprite {
             }
 
             if (!intersectX) {
-                this.x = targetX;
-                intersectX = intersectX || this.intersect(other);
+                node.x = targetX;
+                intersectX = intersectX || node.intersect(other.node);
 
-                this.x = lastX;
+                node.x = lastX;
             }
 
             if (!intersectY) {
-                this.y = targetY;
-                intersectY = intersectY || this.intersect(other);
+                node.y = targetY;
+                intersectY = intersectY || node.intersect(other.node);
 
-                this.y = lastY;
+                node.y = lastY;
             }
         }
 
@@ -97,8 +102,8 @@ export class Char extends AnimationSprite {
     }
 
     private _endMove(): void {
-        this.x += this._dx;
-        this.y += this._dy;
+        this.node.x += this._dx;
+        this.node.y += this._dy;
 
         this._dx = this._dy = 0;
     }

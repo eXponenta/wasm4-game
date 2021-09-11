@@ -30,4 +30,17 @@ export class Rect {
 
         return true;
     }
+
+    public copyFrom(src: Rect): this {
+        this.x = src.x;
+        this.y = src.y;
+        this.width = src.width;
+        this.height = src.height;
+
+        return this;
+    }
+
+    public dispose(): void {
+        //heap.free(changetype<usize>(this));
+    }
 }

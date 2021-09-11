@@ -1,3 +1,4 @@
+import { Rect } from '../math/Rect';
 import * as w4 from './../wasm4';
 import { Entity } from "./entity";
 import { AnimationSprite, Frame, Sprite } from "./sprite";
@@ -15,20 +16,22 @@ const KEY_DIR_TABLE = [
     w4.BUTTON_RIGHT, w4.BUTTON_LEFT
 ];
 
-const DIR_TABLE_X = [0, 0, 1, -1];
-const DIR_TABLE_Y = [1, -1, 0, 0];
+const DIR_TABLE_X: StaticArray<i8> = [0, 0, 1, -1];
+const DIR_TABLE_Y: StaticArray<i8> = [1, -1, 0, 0];
 
 //@unmanaged
 export class Char extends Entity {
     private _moveDir: DIR = DIR.NONE;
     private _lookDir: DIR = DIR.DOWN;
-    private _dx: i32 = 0;
-    private _dy: i32 = 0;
+    private _dx: i16= 0;
+    private _dy: i16 = 0;
     private _localFrame: u8 = 0;
     private _keys: Array<u8> = [];
 
     constructor (frames: StaticArray<Frame>) {
         super(new AnimationSprite(frames, 0.5, 14. / 16.));
+
+        this.hit = new Rect(0,0,2,2);
     }
 
     public changeKeyState(key: u8, pressed: u8): void {
@@ -105,14 +108,14 @@ export class Char extends Entity {
 
             if (!intersectX) {
                 node.x = targetX;
-                intersectX = intersectX || node.intersect(other.node);
+                intersectX = intersectX || this.intersect(other);
 
                 node.x = lastX;
             }
 
             if (!intersectY) {
                 node.y = targetY;
-                intersectY = intersectY || node.intersect(other.node);
+                intersectY = intersectY || this.intersect(other);
 
                 node.y = lastY;
             }

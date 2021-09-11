@@ -3,7 +3,7 @@ import * as w4 from './wasm4';
 export const SEED = 1;
 export const FPS = 30;
 
-export const MIN_OBJ_PER_SCREEN = 3;
+export const MIN_OBJ_PER_SCREEN = 10;
 export const MAX_OBJ_PER_SCREEN = 10;
 export const MAX_CHUNKS = 100;
 

@@ -40,13 +40,9 @@ export class Frame extends Rect {
 
 //@unmanaged
 export class Sprite {
-    public x: i32 = 0;
-    public y: i32 = 0;
-   
-    public flipX: u32 = 0;
-    public flipY: u32 = 0;
-    public hit: Rect;
-    private _bounds: Rect;
+    public visible: bool = true;
+    public x: i16 = 0;
+    public y: i16 = 0;
 
     constructor (
         public frame: Frame,
@@ -61,36 +57,25 @@ export class Sprite {
         if (anchorY < 0) {
             this.anchorY = frame.anchorY;
         }
-
-        this.hit = new Rect(0,0, frame.width, frame.height);
-        this._bounds = new Rect(0,0,frame.width, frame.height);
     }
 
-    public intersect (dest: Sprite): bool {
-        this.updateHitbox();
-        dest.updateHitbox();
-
-        return this.hit.intersect(dest.hit);
-    }
-
-    public updateHitbox(): void {
-        this.hit.x = this.x - i32(f32(this.hit.width) * this.anchorX);
-        this.hit.y = this.y - i32(f32(this.hit.height) * this.anchorY);
-    }
-
-    public get bounds(): Rect {
+    public getBounds(target: Rect): Rect {
         const frame = this.frame;
 
-        this._bounds.x = this.x - i32(f32(frame.width) * this.anchorX);
-        this._bounds.y = this.y - i32(f32(frame.height) * this.anchorY);
+        target.x = this.x - i32(f32(frame.width) * this.anchorX);
+        target.y = this.y - i32(f32(frame.height) * this.anchorY);
 
-        this._bounds.width = this.frame.width;
-        this._bounds.height = this.frame.height;
+        target.width = this.frame.width;
+        target.height = this.frame.height;
 
-        return this._bounds;
+        return target;
     }
 
     public draw(): void {
+        if (!this.visible) {
+            return;
+        }
+
         const frame: Frame = this.frame;
         const texture: Texture = frame.base;
         const data = texture.data;
@@ -99,10 +84,12 @@ export class Sprite {
         const x = this.x - i32(f32(frame.width) * this.anchorX);
         const y = this.y - i32(f32(frame.height) * this.anchorY);
 
+        /*
         const flags =(
-            this.flipX & w4.BLIT_FLIP_X |
+            w4.BLIT_FLIP_X |
             this.flipY & w4.BLIT_FLIP_Y
         );
+        */
 
         // we have a mask, render it with last color
         // for this case colors MUST be a like 0x4321, 0 is always will be aplied for 1 colors
@@ -116,7 +103,7 @@ export class Sprite {
                 frame.x,
                 frame.y,
                 texture.width,
-                flags | w4.BLIT_1BPP
+                w4.BLIT_1BPP
             );
 
             store<u16>(w4.DRAW_COLORS, texture.colors & 0xfff0);
@@ -132,7 +119,7 @@ export class Sprite {
             frame.x,
             frame.y,
             texture.width,
-            flags | texture.type
+            texture.type
         );
     }
 }

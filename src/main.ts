@@ -5,6 +5,7 @@ import { Chunk } from "./world/chunk";
 import { charsFrames } from "./img/char";
 import { oval } from "./utils";
 import { Entity } from "./nodes/entity";
+import { Rect } from "./math/Rect";
 
 C.setPalette();
 
@@ -38,9 +39,7 @@ function sortSpriteY(a: Entity, b: Entity): i32 {
 
 export function start(): void {
     player = new Char(charsFrames);
-    player.node.hit.width = 2;
-    player.node.hit.height = 2;
-    player.node.x = w4.SCREEN_SIZE / 2;
+    player.node.x = i16(w4.SCREEN_SIZE / 2);
     player.node.y = -4;
 
     currenChunk = regenerate(0, 0);
@@ -129,6 +128,8 @@ function gui (): void {
     w4.text('chunk:' + currenChunk.x.toString() + '-' + currenChunk.y.toString(), 0,0);
 }
 
+const boundsTmp = new Rect(0,0,0,0);
+
 export function update (): void {
     const w = 160 >> 2;
 
@@ -153,7 +154,7 @@ export function update (): void {
     store<u16>(w4.DRAW_COLORS, 0x22);
     for(let i = 0; i < objects.length; i ++) {
         const obj = objects[i];
-        const bounds = obj.node.bounds;
+        const bounds = obj.node.getBounds(boundsTmp);
         const h = max(bounds.height / 4, 4);
 
         oval(bounds.x, obj.y - h / 2, bounds.width, h);

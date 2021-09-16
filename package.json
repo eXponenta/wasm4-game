@@ -7,7 +7,7 @@
     "build:debug": "asc --target debug",
     "run": "w4 run ./build/cart.wasm",
     "watch": "nodemon --delay 1 --ext ts,json --watch ./src --exec npm run build:debug",
-    "bundle": "w4 bundle ./build/cart.wasm --html ./build/my-super-game.html"
+    "bundle": "w4 bundle ./build/cart.wasm --html ./build/index.html"
   },
   "devDependencies": {
     "assemblyscript": "^0.19.12",
@@ -15,6 +15,6 @@
   },
   "dependencies": {
     "source-map-support": "^0.5.20",
-    "wasm4": "1.0.4"
+    "wasm4": "^1.0.7"
   }
 }

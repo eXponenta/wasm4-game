@@ -2,7 +2,7 @@ import * as w4 from './wasm4';
 import { MAX_CHUNKS, MAX_OBJ_PER_SCREEN } from "./constants";
 
 const SAVE_VERSION: u8 = 2;
-const TREES_BYTES_SIZE: u32 = MAX_CHUNKS * MAX_CHUNKS * Math.ceil(MAX_OBJ_PER_SCREEN / 8.0);
+const TREES_BYTES_SIZE: u32 = MAX_CHUNKS * MAX_CHUNKS * u32(Math.ceil(MAX_OBJ_PER_SCREEN / 8.0));
 
 @unmanaged
 export class State {

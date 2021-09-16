@@ -1,4 +1,4 @@
-import { MAX_CHUNKS, MAX_OBJ_PER_SCREEN, MIN_OBJ_PER_SCREEN, SEED, setPalette } from "../constants";
+import { MAX_CHUNKS, MAX_OBJ_PER_SCREEN, MIN_OBJ_PER_SCREEN, STATE } from "../constants";
 import { Prng } from "../math/random";
 import { Char } from "../nodes/char";
 import { Entity } from "../nodes/entity";
@@ -14,11 +14,11 @@ export class Chunk {
     private player: Char | null;
 
     constructor (
-        public readonly x: i32 = 0,
-        public readonly y: i32 = 0,
+        public readonly x: u32 = 0,
+        public readonly y: u32 = 0,
     ) {
         const offset = MAX_CHUNKS / 2;
-        const seed = SEED + ((this.y + offset) << 16 | (this.x + offset));
+        const seed = STATE.seed + ((this.y + offset) << 16 | (this.x + offset));
         const rnd = new Prng (seed);
 
         this.count = rnd.randomRange<u32>(MIN_OBJ_PER_SCREEN, MAX_OBJ_PER_SCREEN); 
@@ -46,5 +46,9 @@ export class Chunk {
 
         //heap.free(changetype<usize>(this.objects));
         heap.free(changetype<usize>(this));
+    }
+
+    public get id(): u8 {
+        return u8(this.x << 4 | this.y);
     }
 }

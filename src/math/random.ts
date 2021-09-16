@@ -1,12 +1,14 @@
 import * as w4 from './../wasm4';
-import { SEED } from "../constants";
-
 @unmanaged
 export class Prng {
     constructor (
-        public readonly seed: i32
+        public seed: u32 = 0
     ) {
+        if (seed)
+            this.setSeed(seed);
+    }
 
+    public setSeed(seed: u32): void {
         w4.trace('use seed:' + seed.toString());
         NativeMath.seedRandom(seed);
     }
@@ -26,4 +28,4 @@ export class Prng {
     }
 }
 
-export const rnd = new Prng(SEED);
+export const rnd = new Prng();

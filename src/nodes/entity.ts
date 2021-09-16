@@ -1,7 +1,5 @@
-import { FPS } from "../constants";
 import { Rect } from "../math/Rect";
 import { saw } from "../math/saw";
-import { rect, trace } from "../wasm4";
 import { AnimationSprite, Sprite } from "./sprite";
 
 const tmpRectForHIT1 = new Rect(0,0,0,0);
@@ -14,9 +12,12 @@ export class Entity {
     constructor (
         public node: Sprite,
         public health: u32 = 1,
+        public id: u32 = 0
     ) {
-
+        this.init();
     }
+
+    public init(): void {};
     
     public intersect (dest: Entity): bool {
         if (dest.hit === null || !dest.obstacle) {
@@ -63,7 +64,7 @@ export class Entity {
     
     }
 
-    public damage (): void {
+    public damage (ammout: u32 = 1): void  {
     }
 
     public attack(): void {
@@ -81,6 +82,26 @@ export class Tree extends Entity {
     private lastUpdateTick: u32 = 0;
     private _baseX: i32 = 0;
     private _blinkTime: u8 = 0;
+
+    public init(): void {
+        if (this.health === 0) {
+            this.kill();
+        }
+    }
+
+    private kill(): void {
+        const node = this.node as AnimationSprite;
+                
+        if(this.hit !== null) {
+            this.hit!.dispose();
+            this.hit = null;
+            this.obstacle = false;
+        }
+
+        node.frameId = 1;
+        node.anchorX = node.frame.anchorX;
+        node.anchorY = node.frame.anchorY;    
+    }
 
     public update (tick: u32, world: Entity[]): void {
         this.lastUpdateTick = tick;
@@ -101,27 +122,17 @@ export class Tree extends Entity {
             this.node.visible = !bool(this._blinkTime % 2);
 
             if (this._blinkTime === 0) {
-                const node = this.node as AnimationSprite;
-                
-                if(this.hit !== null) {
-                    this.hit!.dispose();
-                    this.hit = null;
-                    this.obstacle = false;
-                }
-
-                node.frameId = 1;
-                node.anchorX = node.frame.anchorX;
-                node.anchorY = node.frame.anchorY;    
+                this.kill();
             }
         }
     }
 
-    public damage (): void {
+    public damage (ammout: u32 = 1): void {
         if (this.health === 0) {
             return;
         }
 
-        this.health --;
+        this.health -= min(this.health, ammout);
 
         if (this.health === 0) {
             this._blinkTime = 10;

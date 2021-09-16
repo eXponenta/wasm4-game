@@ -1,7 +1,7 @@
 import { Rect } from '../math/Rect';
 import * as w4 from './../wasm4';
 
-//@unmanaged
+@unmanaged
 export class Texture {
     constructor (
         public width: u8,

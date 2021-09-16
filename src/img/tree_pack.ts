@@ -14,6 +14,6 @@ export const trees: Array<Frame> = [
 
 export const brokedTrees: Array<Frame> = [
     new Frame(tree_packTexture, 0 ,36, 40, 12, 0.5, 8.0 / 12.0),
-    new Frame(tree_packTexture, 40,36, 30, 4, 0.5, 1.),
-    new Frame(tree_packTexture, 70,36, 30, 5, 0.5, 1.),
+    new Frame(tree_packTexture, 40 + 5,36, 30 - 10, 4, 0.5, 1.),
+    new Frame(tree_packTexture, 70 + 5,36, 30 - 10, 5, 0.5, 1.),
 ];

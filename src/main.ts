@@ -1,11 +1,14 @@
 import { Char } from "./nodes/char";
 import * as C from './constants';
+import { STATE } from "./constants";
 import * as w4 from "./wasm4";
 import { Chunk } from "./world/chunk";
 import { charsFrames } from "./img/char";
 import { oval } from "./utils";
 import { Entity } from "./nodes/entity";
 import { Rect } from "./math/Rect";
+import { rnd } from "./math/random";
+import { saveChunkState } from "./world/gen";
 
 C.setPalette();
 
@@ -21,6 +24,9 @@ function regenerate (x: i32, y: i32): Chunk {
     if (currenChunk) {
         currenChunk.dispose();
     }
+
+    x = (x + C.MAX_CHUNKS) % C.MAX_CHUNKS;
+    y = (y + C.MAX_CHUNKS) % C.MAX_CHUNKS;
 
     currenChunk = new Chunk(x, y);
     currenChunk.setPlayer(player);
@@ -38,13 +44,23 @@ function sortSpriteY(a: Entity, b: Entity): i32 {
 }
 
 export function start(): void {
+    STATE.load();
+    STATE.dump();
+    rnd.setSeed(STATE.seed);
+
     player = new Char(charsFrames);
     player.node.x = i16(w4.SCREEN_SIZE / 2);
     player.node.y = -4;
 
-    currenChunk = regenerate(0, 0);
+    currenChunk = regenerate(
+        (STATE.lastChunkId >> 4) & 0xf, 
+        STATE.lastChunkId & 0xf
+    );
 
     lastTime = w4.time();
+
+    // save current state
+    STATE.save();
 }
 
 function updateGame(): void {
@@ -149,6 +165,10 @@ export function update (): void {
     currenTick ++;
     if (currenTick % FRAME_DROP === 0) {
         updateGame();
+    }
+
+    if (currenTick % C.STATE_SAVE_PERIOD === 0) {
+        saveChunkState(currenChunk);
     }
 
     store<u16>(w4.DRAW_COLORS, 0x22);

@@ -7,10 +7,12 @@ import { fillChunk } from "./gen";
 
 @unmanaged
 export class Chunk {
-    public objects: Array<Entity>;
+    public objects: Array<Entity> | null;
+    public offset: u32 = 0;
+
     public readonly count: u32;
     public readonly seed: u32;
-
+ 
     private player: Char | null;
 
     constructor (
@@ -22,15 +24,12 @@ export class Chunk {
         const rnd = new Prng (seed);
 
         this.count = rnd.randomRange<u32>(MIN_OBJ_PER_SCREEN, MAX_OBJ_PER_SCREEN); 
-        this.objects = new Array<Entity>(this.count + 1);
         this.seed = seed;
-
-        fillChunk(this, rnd);
     }
 
     public setPlayer(player: Char): void {
         this.player = player;
-        this.objects[this.objects.length - 1] = player;
+        this.objects![this.objects!.length - 1] = player;
     }
 
     public dispose(): void {
@@ -43,9 +42,7 @@ export class Chunk {
         */
 
         this.player = null;
-
-        //heap.free(changetype<usize>(this.objects));
-        heap.free(changetype<usize>(this));
+        this.objects = null;
     }
 
     public get id(): u8 {

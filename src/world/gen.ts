@@ -1,17 +1,37 @@
 import { Chunk } from './chunk';
 import * as w4 from './../wasm4';
-import { Prng } from '../math/random';
+import { Prng, rnd } from '../math/random';
 import { AnimationSprite } from '../nodes/sprite';
 import { trees, brokedTrees } from '../img/tree_pack';
-import { Tree } from '../nodes/entity';
+import { Entity, Tree } from '../nodes/entity';
 import { Rect } from '../math/Rect';
-import { STATE } from '../constants';
+import { MAX_CHUNKS, STATE } from '../constants';
 
-export function fillChunk (chunk: Chunk, rnd: Prng): void {
-    const array = chunk.objects;
+export const CHUNKS: StaticArray<Chunk> = new StaticArray<Chunk>(MAX_CHUNKS * MAX_CHUNKS);
+
+export function precomputeChunks(): void {
+    let offset = 0;
+
+    for(let i = 0; i < CHUNKS.length; i++) {
+        const chunk = new Chunk(
+            i % MAX_CHUNKS,
+            i / MAX_CHUNKS
+        );
+
+        chunk.offset = offset;
+        offset += chunk.count;
+
+        CHUNKS[i] = chunk;
+    }
+}
+
+export function fillChunk (chunk: Chunk): void {
+    rnd.setSeed(chunk.seed);
+
+    const array = new Array<Entity>(chunk.count + 1);
 
     for(let i: u16 = 0; i < chunk.count; i++) {
-        const id = i + chunk.id;
+        const id = i + chunk.offset;
         const treeType = rnd.randomRange(0, 3);
         const treeFrame = trees[treeType];
         const brokenFrame = brokedTrees[treeType];
@@ -29,10 +49,12 @@ export function fillChunk (chunk: Chunk, rnd: Prng): void {
         array[i] = ent;
     }
 
+    chunk.objects = array;
+
 }
 
 export function saveChunkState(chunk: Chunk): void {
-    const objects = chunk.objects;
+    const objects = chunk.objects!;
 
     for(let i = 0; i < objects.length; i ++) {
         const obj = objects[i];

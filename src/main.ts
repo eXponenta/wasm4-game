@@ -8,7 +8,7 @@ import { oval } from "./utils";
 import { Entity } from "./nodes/entity";
 import { Rect } from "./math/Rect";
 import { rnd } from "./math/random";
-import { saveChunkState } from "./world/gen";
+import { CHUNKS, fillChunk, precomputeChunks, saveChunkState } from "./world/gen";
 
 C.setPalette();
 
@@ -28,14 +28,21 @@ function regenerate (x: i32, y: i32): Chunk {
     x = (x + C.MAX_CHUNKS) % C.MAX_CHUNKS;
     y = (y + C.MAX_CHUNKS) % C.MAX_CHUNKS;
 
-    currenChunk = new Chunk(x, y);
+    const id = y * C.MAX_CHUNKS + x;
+
+    w4.trace('regenerate' + id.toString());
+    
+    currenChunk = CHUNKS[id];
+
+    w4.trace('chunk size:' + currenChunk.count.toString());
+
+    fillChunk(currenChunk);
+
     currenChunk.setPlayer(player);
 
     player.x = (player.x + w4.SCREEN_SIZE) % w4.SCREEN_SIZE;
     player.y = (player.y + w4.SCREEN_SIZE) % w4.SCREEN_SIZE;
 
-    w4.trace('regenerate' + x.toString() + ':' + y.toString());
-    w4.trace('chunk size:' + currenChunk.objects.length.toString());
     return currenChunk;
 }
 
@@ -47,6 +54,8 @@ export function start(): void {
     STATE.load();
     STATE.dump();
     rnd.setSeed(STATE.seed);
+
+    precomputeChunks();
 
     player = new Char(charsFrames);
     player.node.x = i16(w4.SCREEN_SIZE / 2);
@@ -69,7 +78,7 @@ function updateGame(): void {
     lastTime = time;
 
     //w4.trace("delta time:" + delta.toString())
-    const array = currenChunk.objects;
+    const array = currenChunk.objects!;
 
     const gamepad = load<u8>(w4.GAMEPAD1);
     const gamepadDiff = (lastGamepad ^ gamepad);
@@ -160,7 +169,7 @@ export function update (): void {
     }
     
 
-    const objects = currenChunk.objects;
+    const objects = currenChunk.objects!;
 
     currenTick ++;
     if (currenTick % FRAME_DROP === 0) {

@@ -8,9 +8,11 @@ export class Prng {
             this.setSeed(seed);
     }
 
-    public setSeed(seed: u32): void {
-        w4.trace('use seed:' + seed.toString());
+    public setSeed(seed: u32): this {
+        //w4.trace('use seed:' + seed.toString());
         NativeMath.seedRandom(seed);
+
+        return this;
     }
 
     public randomInt(): u32 {

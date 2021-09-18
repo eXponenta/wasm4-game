@@ -20,7 +20,7 @@
       "noAssert": true
     },
     "debug": {
-      "sourceMap": "./cart.wasm.map",
+      "sourceMap": "http://localhost:4444/cart.wasm.map",
       "debug": true
     }
   }

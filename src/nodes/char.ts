@@ -29,8 +29,9 @@ export class Char extends Entity {
     private _keys: Array<u8> = [];
 
     constructor (frames: StaticArray<Frame>) {
-        super(new AnimationSprite(frames, 0.5, 14. / 16.));
+        super();
 
+        this.init(new AnimationSprite(frames, 0.5, 14. / 16.));
         this.hit = new Rect(0,0,2,2);
     }
 
@@ -90,11 +91,11 @@ export class Char extends Entity {
             this._dy = DIR_TABLE_Y[this._moveDir];
         }
 
-        const lastX = node.x;
-        const lastY = node.y;
+        const lastX = this.x;
+        const lastY = this.y;
 
-        const targetX = this._dx + node.x;
-        const targetY = this._dy + node.y;
+        const targetX = this._dx + this.x;
+        const targetY = this._dy + this.y;
 
         let intersectX: bool = false;
         let intersectY: bool = false;
@@ -107,17 +108,17 @@ export class Char extends Entity {
             }
 
             if (!intersectX) {
-                node.x = targetX;
+                this.x = targetX;
                 intersectX = intersectX || this.intersect(other);
 
-                node.x = lastX;
+                this.x = lastX;
             }
 
             if (!intersectY) {
-                node.y = targetY;
+                this.y = targetY;
                 intersectY = intersectY || this.intersect(other);
 
-                node.y = lastY;
+                this.y = lastY;
             }
         }
 
@@ -131,13 +132,13 @@ export class Char extends Entity {
     }
 
     private _endMove(): void {
-        this.node.x += this._dx;
-        this.node.y += this._dy;
+        this.x+= this._dx;
+        this.y += this._dy;
 
         this._dx = this._dy = 0;
     }
 
     public attack(): void {
-        (this.node as AnimationSprite).frameId = u8(this._lookDir * 4 + 1);
+        (this.node! as AnimationSprite).frameId = u8(this._lookDir * 4 + 1);
     }
 }

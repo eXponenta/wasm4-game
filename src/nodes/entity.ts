@@ -6,18 +6,21 @@ const tmpRectForHIT1 = new Rect(0,0,0,0);
 const tmpRectForHIT2 = new Rect(0,0,0,0);
 
 export class Entity {
+    public node: Sprite | null;
+    public health: u32 = 1;
+    public id: u32 = 0;
     public hit: Rect | null;
     public obstacle: bool = true;
 
-    constructor (
-        public node: Sprite,
-        public health: u32 = 1,
-        public id: u32 = 0
-    ) {
-        this.init();
+    public init(
+        node: Sprite,
+        health: u32 = 1,
+        id: u32 = 0
+    ): void {
+        this.node = node;
+        this.health = health;
+        this.id = id;
     }
-
-    public init(): void {};
     
     public intersect (dest: Entity): bool {
         if (dest.hit === null || !dest.obstacle) {
@@ -31,11 +34,12 @@ export class Entity {
     }
 
     public getHitbox(target: Rect): Rect {
+        const node = this.node!;
+
         if (this.hit === null) {
-            return this.node.getBounds(target);
+            return node.getBounds(target);
         }
 
-        const node = this.node;
         const hit = this.hit!;
 
         hit.x = this.x - i32(f32(hit.width) * node.anchorX);
@@ -45,19 +49,19 @@ export class Entity {
     }
 
     public get x(): i32 {
-        return this.node.x;
+        return this.node!.x;
     }
 
     public get y(): i32 {
-        return this.node.y;
+        return this.node!.y;
     }
 
     public set x (v: i32) {
-        this.node.x = i16(v);
+        this.node!.x = i16(v);
     }
 
     public set y (v: i32) {
-        this.node.y = i16(v);
+        this.node!.y = i16(v);
     }
 
     public update (tick: u32, world: Entity[]): void {
@@ -83,7 +87,26 @@ export class Tree extends Entity {
     private _baseX: i32 = 0;
     private _blinkTime: u8 = 0;
 
-    public init(): void {
+    public init(
+        node: Sprite,
+        health: u32 = 1,
+        id: u32 = 0
+    ): void {
+        super.init(node, health, id);
+
+        if (!this.hit) {
+            this.hit = new Rect(0,0,0,0);
+        }
+
+        const sprite = node as AnimationSprite;
+
+        sprite.frameId = 0;
+        sprite.syncAnchors();
+
+        this.hit!.width = node.frame.width / 4;
+        this.hit!.height = node.frame.height / 8;
+        this.obstacle = true;
+
         if (this.health === 0) {
             this.kill();
         }
@@ -99,8 +122,7 @@ export class Tree extends Entity {
         }
 
         node.frameId = 1;
-        node.anchorX = node.frame.anchorX;
-        node.anchorY = node.frame.anchorY;    
+        node.syncAnchors();
     }
 
     public update (tick: u32, world: Entity[]): void {
@@ -119,7 +141,7 @@ export class Tree extends Entity {
 
         if (this._blinkTime > 0) {
             this._blinkTime --;
-            this.node.visible = !bool(this._blinkTime % 2);
+            this.node!.visible = !bool(this._blinkTime % 2);
 
             if (this._blinkTime === 0) {
                 this.kill();

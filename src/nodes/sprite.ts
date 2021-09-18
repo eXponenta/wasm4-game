@@ -59,6 +59,14 @@ export class Sprite {
         }
     }
 
+    /**
+     * Sync a anchors with frames
+     */
+    public syncAnchors(): void {
+        this.anchorX = this.frame.anchorX;
+        this.anchorY = this.frame.anchorY;
+    }
+
     public getBounds(target: Rect): Rect {
         const frame = this.frame;
 

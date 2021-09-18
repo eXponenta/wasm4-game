@@ -30,11 +30,11 @@ function regenerate (x: i32, y: i32): Chunk {
 
     const id = y * C.MAX_CHUNKS + x;
 
-    w4.trace('regenerate' + id.toString());
+    //w4.trace('regenerate' + id.toString());
     
     currenChunk = CHUNKS[id];
 
-    w4.trace('chunk size:' + currenChunk.count.toString());
+    //w4.trace('chunk size:' + currenChunk.count.toString());
 
     fillChunk(currenChunk);
 
@@ -58,8 +58,8 @@ export function start(): void {
     precomputeChunks();
 
     player = new Char(charsFrames);
-    player.node.x = i16(w4.SCREEN_SIZE / 2);
-    player.node.y = -4;
+    player.x = i16(w4.SCREEN_SIZE / 2);
+    player.y = -4;
 
     currenChunk = regenerate(
         (STATE.lastChunkId >> 4) & 0xf, 
@@ -150,7 +150,7 @@ function updateGame(): void {
 function gui (): void {
     store<u16>(w4.DRAW_COLORS, 0x01);
     
-    w4.text('chunk:' + currenChunk.x.toString() + '-' + currenChunk.y.toString(), 0,0);
+    //w4.text('chunk:' + currenChunk.x.toString() + '-' + currenChunk.y.toString(), 0,0);
 }
 
 const boundsTmp = new Rect(0,0,0,0);
@@ -183,14 +183,14 @@ export function update (): void {
     store<u16>(w4.DRAW_COLORS, 0x22);
     for(let i = 0; i < objects.length; i ++) {
         const obj = objects[i];
-        const bounds = obj.node.getBounds(boundsTmp);
+        const bounds = obj.node!.getBounds(boundsTmp);
         const h = max(bounds.height / 4, 4);
 
         oval(bounds.x, obj.y - h / 2, bounds.width, h);
     }
 
     for(let i = 0; i < objects.length; i ++) {
-        objects[i].node.draw();
+        objects[i].node!.draw();
     }
 
     gui();
